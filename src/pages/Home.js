@@ -1,8 +1,8 @@
 import React from 'react';
 import { Container, Row, Col, Image } from 'react-bootstrap';
 import { FaTruck, FaShippingFast, FaWarehouse } from 'react-icons/fa';
-import logo from '../logo.svg'; // Assuming you have a logo image in assets
-import '../assest/css/home.css'; // Import custom CSS
+import logo from '../logo.svg'; 
+import '../assest/css/home.css'; 
 
 const Home = () => {
   return (

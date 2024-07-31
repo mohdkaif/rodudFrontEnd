@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Alert } from 'react-bootstrap';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import logo from '../logo.svg'; // Ensure the path to your logo is correct
+import logo from '../logo.svg'; 
+import { postData } from '../apiService';
 
 const Container = styled.div`
   display: flex;
@@ -75,34 +75,34 @@ const Login = ({ setUser }) => {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
- // const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/login', {
-         email,
-        password,
-      });
-      const { access_token } = response.data;
-
-      // Set user and token in local storage or context
-      setUser({ email, token: access_token });
-      localStorage.setItem('Authorization', access_token);
-      console.log('MESSAGE',response.data)
-      // Display success message
-      // toast.success('Login successful!', {
-      //   position: toast.POSITION.TOP_RIGHT,
-      // });
-
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+      const response = await postData('login', { email, password });
+      
+      console.log('Full Response:', response);
+      
+      const { access_token, token_type } = response;
+  
+      if (access_token && token_type) {
+        localStorage.setItem('Authorization', `${token_type} ${access_token}`);
+        
+        setUser({ token: access_token });
+        toast.success('Login successful!');
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
+      } else {
+        throw new Error('Invalid response structure');
+      }
     } catch (error) {
       setError('Invalid email or password');
+      toast.error('Invalid email or password');
     }
   };
+  
+  
 
   return (
     <Container>

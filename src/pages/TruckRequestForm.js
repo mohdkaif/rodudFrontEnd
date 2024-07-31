@@ -1,13 +1,80 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col, Spinner } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import usePlacesAutocomplete from 'use-places-autocomplete';
-import useOnclickOutside from 'react-cool-onclickoutside';
-import axios from 'axios'; 
+import PlacesAutocomplete from 'react-places-autocomplete';
 import { getToken } from '../utils/authUtils';
 import { postData } from '../apiService';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; 
 
+const LinkText = styled.div`
+    text-align: center;
+    margin-top: 20px;
+    font-size: 16px;
+    color: #007bff;
+`;
+
+const CustomForm = styled(Form)`
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+`;
+
+const CustomControl = styled(Form.Control)`
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    box-shadow: none;
+    &:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+    }
+`;
+
+const CustomButton = styled(Button)`
+    background-color: #007bff;
+    border-color: #007bff;
+    border-radius: 8px;
+    &:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+`;
+
+const AutocompleteContainer = styled.div`
+    position: relative;
+    width: 100%;
+`;
+
+const AutocompleteDropdown = styled.div`
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+    overflow-y: auto;
+`;
+
+const SuggestionItem = styled.div`
+    padding: 12px;
+    cursor: pointer;
+    &:hover {
+        background-color: #f1f1f1;
+    }
+`;
+
+const Title = styled.h2`
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+`;
 
 const TruckRequestForm = ({ addRequest }) => {
     const [formData, setFormData] = useState({
@@ -18,66 +85,19 @@ const TruckRequestForm = ({ addRequest }) => {
         pickup_date_time: '',
         delivery_date_time: '',
     });
-    const [loading, setLoading] = useState(false); // Loading state
-    const [error, setError] = useState(null); // Error state
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate(); 
 
-    const {
-        ready,
-        value: pickupValue,
-        suggestions: { status: pickupStatus, data: pickupData },
-        setValue: setPickupValue,
-        clearSuggestions: clearPickupSuggestions,
-    } = usePlacesAutocomplete();
-
-    const {
-        value: deliveryValue,
-        suggestions: { status: deliveryStatus, data: deliveryData },
-        setValue: setDeliveryValue,
-        clearSuggestions: clearDeliverySuggestions,
-    } = usePlacesAutocomplete();
-
-    const pickupRef = useRef();
-    const deliveryRef = useRef();
-
-    const LinkText = styled.div`
-        text-align: center;
-        margin-top: 15px;
-        font-size: 14px;
-        color: #007bff;
-    `;
-
-    useOnclickOutside(pickupRef, () => {
-        clearPickupSuggestions();
-    });
-
-    useOnclickOutside(deliveryRef, () => {
-        clearDeliverySuggestions();
-    });
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-
-        if (name === 'pickup_address') {
-            setPickupValue(value);
-        } else if (name === 'delivery_address') {
-            setDeliveryValue(value);
-        }
+    const handleChange = (address, name) => {
+        setFormData({ ...formData, [name]: address });
     };
 
-    const handleSelect = (name, value) => {
-        setFormData({ ...formData, [name]: value });
-        if (name === 'pickup_address') {
-            setPickupValue(value, false);
-            clearPickupSuggestions();
-        } else if (name === 'delivery_address') {
-            setDeliveryValue(value, false);
-            clearDeliverySuggestions();
-        }
+    const handleSelect = (address, name) => {
+        setFormData({ ...formData, [name]: address });
     };
 
     const formatDate = (datetime) => {
-        // Convert from 'YYYY-MM-DDTHH:MM' format to 'DD/MM/YYYY'
         const [date] = datetime.split('T');
         const [year, month, day] = date.split('-');
         return `${day}/${month}/${year}`;
@@ -85,11 +105,10 @@ const TruckRequestForm = ({ addRequest }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Start loading
-        setError(null); // Reset error
+        setLoading(true);
+        setError(null);
 
-        const token =  getToken();
-        
+        const token = getToken();
 
         const formattedData = {
             pickup_address: formData.pickup_address,
@@ -101,13 +120,12 @@ const TruckRequestForm = ({ addRequest }) => {
         };
 
         try {
-            
-            const endpoint='add-truck-request';
-            const headers= {
-                'Authorization': `Bearer ${token}`,
+            const endpoint = 'add-truck-request';
+            const headers = {
+                'Authorization': `${token}`,
                 'Content-Type': 'application/json'
-            }
-            const response = await postData(endpoint, headers, formattedData);
+            };
+            const response = await postData(endpoint, formattedData,headers);
 
             addRequest(formattedData);
             setFormData({
@@ -118,135 +136,165 @@ const TruckRequestForm = ({ addRequest }) => {
                 pickup_date_time: '',
                 delivery_date_time: '',
             });
-            alert(response.data.message);
+            toast.success(response.data.message); // Show success toast
+            setTimeout(() => navigate('/dashboard'), 2000); // Redirect after 2 seconds
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred'); // Set error message
+            setError(err.response?.data?.message || 'An error occurred');
+            toast.error('An error occurred'); // Show error toast
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
     };
 
-    const renderSuggestions = (name, suggestions) =>
-        suggestions.map((suggestion) => {
-            const {
-                place_id,
-                structured_formatting: { main_text, secondary_text },
-            } = suggestion;
-
-            return (
-                <li
-                    key={place_id}
-                    onClick={() => handleSelect(name, `${main_text}, ${secondary_text}`)}
-                    className="list-group-item"
-                    style={{ cursor: 'pointer' }}
-                >
-                    <strong>{main_text}</strong> <small>{secondary_text}</small>
-                </li>
-            );
-        });
-
     return (
         <Container>
-            <Row>
-                <Col md={{ span: 6, offset: 3 }}>
-                    <h2 className="text-center my-4">Truck Request Form</h2>
-                    <Form onSubmit={handleSubmit}>
+            <Row className="justify-content-center">
+                <Col md={8} lg={6}>
+                    <Title className="text-center">Truck Request Form</Title>
+                    <CustomForm onSubmit={handleSubmit}>
                         <Form.Group controlId="pickup_address">
                             <Form.Label>Pickup Location</Form.Label>
-                            <div ref={pickupRef}>
-                                <Form.Control
-                                    type="text"
-                                    name="pickup_address"
-                                    value={pickupValue}
-                                    onChange={handleChange}
-                                    autoComplete="off"
-                                    required
-                                />
-                                {pickupStatus === 'OK' && (
-                                    <ul className="list-group mt-2">
-                                        {renderSuggestions('pickup_address', pickupData)}
-                                    </ul>
-                                )}
-                            </div>
+                            <AutocompleteContainer>
+                                <PlacesAutocomplete
+                                    value={formData.pickup_address}
+                                    onChange={(address) => handleChange(address, 'pickup_address')}
+                                    onSelect={(address) => handleSelect(address, 'pickup_address')}
+                                >
+                                    {({ getInputProps, suggestions, getSuggestionItemProps }) => (
+                                        <div>
+                                            <CustomControl
+                                                {...getInputProps({
+                                                    placeholder: 'Enter pickup address',
+                                                    autoComplete: 'off'
+                                                })}
+                                                required
+                                            />
+                                            {suggestions.length > 0 && (
+                                                <AutocompleteDropdown>
+                                                    {suggestions.map((suggestion) => {
+                                                        const className = suggestion.active
+                                                            ? 'suggestion-item--active'
+                                                            : '';
+                                                        return (
+                                                            <SuggestionItem
+                                                                {...getSuggestionItemProps(suggestion, {
+                                                                    className,
+                                                                })}
+                                                            >
+                                                                <strong>{suggestion.formattedSuggestion.mainText}</strong>
+                                                                <small>{suggestion.formattedSuggestion.secondaryText}</small>
+                                                            </SuggestionItem>
+                                                        );
+                                                    })}
+                                                </AutocompleteDropdown>
+                                            )}
+                                        </div>
+                                    )}
+                                </PlacesAutocomplete>
+                            </AutocompleteContainer>
                         </Form.Group>
 
                         <Form.Group controlId="delivery_address">
                             <Form.Label>Delivery Location</Form.Label>
-                            <div ref={deliveryRef}>
-                                <Form.Control
-                                    type="text"
-                                    name="delivery_address"
-                                    value={deliveryValue}
-                                    onChange={handleChange}
-                                    autoComplete="off"
-                                    required
-                                />
-                                {deliveryStatus === 'OK' && (
-                                    <ul className="list-group mt-2">
-                                        {renderSuggestions('delivery_address', deliveryData)}
-                                    </ul>
-                                )}
-                            </div>
+                            <AutocompleteContainer>
+                                <PlacesAutocomplete
+                                    value={formData.delivery_address}
+                                    onChange={(address) => handleChange(address, 'delivery_address')}
+                                    onSelect={(address) => handleSelect(address, 'delivery_address')}
+                                >
+                                    {({ getInputProps, suggestions, getSuggestionItemProps }) => (
+                                        <div>
+                                            <CustomControl
+                                                {...getInputProps({
+                                                    placeholder: 'Enter delivery address',
+                                                    autoComplete: 'off'
+                                                })}
+                                                required
+                                            />
+                                            {suggestions.length > 0 && (
+                                                <AutocompleteDropdown>
+                                                    {suggestions.map((suggestion) => {
+                                                        const className = suggestion.active
+                                                            ? 'suggestion-item--active'
+                                                            : '';
+                                                        return (
+                                                            <SuggestionItem
+                                                                {...getSuggestionItemProps(suggestion, {
+                                                                    className,
+                                                                })}
+                                                            >
+                                                                <strong>{suggestion.formattedSuggestion.mainText}</strong>
+                                                                <small>{suggestion.formattedSuggestion.secondaryText}</small>
+                                                            </SuggestionItem>
+                                                        );
+                                                    })}
+                                                </AutocompleteDropdown>
+                                            )}
+                                        </div>
+                                    )}
+                                </PlacesAutocomplete>
+                            </AutocompleteContainer>
                         </Form.Group>
 
                         <Form.Group controlId="size">
                             <Form.Label>Size</Form.Label>
-                            <Form.Control
+                            <CustomControl
                                 type="text"
                                 name="size"
                                 value={formData.size}
-                                onChange={handleChange}
+                                onChange={(e) => handleChange(e.target.value, 'size')}
                                 required
                             />
                         </Form.Group>
 
                         <Form.Group controlId="weight">
                             <Form.Label>Weight</Form.Label>
-                            <Form.Control
+                            <CustomControl
                                 type="text"
                                 name="weight"
                                 value={formData.weight}
-                                onChange={handleChange}
+                                onChange={(e) => handleChange(e.target.value, 'weight')}
                                 required
                             />
                         </Form.Group>
 
                         <Form.Group controlId="pickup_date_time">
                             <Form.Label>Pickup Date & Time</Form.Label>
-                            <Form.Control
+                            <CustomControl
                                 type="date"
                                 name="pickup_date_time"
                                 value={formData.pickup_date_time}
-                                onChange={handleChange}
+                                onChange={(e) => handleChange(e.target.value, 'pickup_date_time')}
                                 required
                             />
                         </Form.Group>
 
                         <Form.Group controlId="delivery_date_time">
                             <Form.Label>Delivery Date & Time</Form.Label>
-                            <Form.Control
+                            <CustomControl
                                 type="date"
                                 name="delivery_date_time"
                                 value={formData.delivery_date_time}
-                                onChange={handleChange}
+                                onChange={(e) => handleChange(e.target.value, 'delivery_date_time')}
                                 required
                             />
                         </Form.Group>
 
-                        <Button variant="primary" type="submit" className="w-100 my-3" disabled={loading}>
+                        <CustomButton variant="primary" type="submit" className="w-100 my-3" disabled={loading}>
                             {loading ? (
                                 <Spinner animation="border" size="sm" />
                             ) : (
                                 'Submit Request'
                             )}
-                        </Button>
+                        </CustomButton>
                         {error && <div className="text-danger text-center my-2">{error}</div>}
                         <LinkText>
                             <Link to="/dashboard" style={{ color: '#007bff', textDecoration: 'none' }}>
                                 Go To Dashboard
                             </Link>
                         </LinkText>
-                    </Form>
+                    </CustomForm>
+                    <ToastContainer /> 
                 </Col>
             </Row>
         </Container>

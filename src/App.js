@@ -26,7 +26,7 @@ const App = () => {
   }, []);
 
   const addRequest = (request) => {
-    setRequests([...requests, request]);
+    setRequests(prevRequests => [...prevRequests, request]);
   };
 
   return (
@@ -40,18 +40,17 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard requests={requests} />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/logout" element={<Logout setUser={setUser} />} />
-              <Route path="*" element={<Navigate to="/dashboard" />} />
+              <Route path="/" element={<Home />} /> 
             </>
           ) : (
             <>
               <Route path="/login" element={<Login setUser={setUser} />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="*" element={<Navigate to="/login" />} />
+              <Route path="/" element={<Home />} /> 
+              <Route path="*" element={<Navigate to="/login" />} /> 
             </>
           )}
-            <Route path="/" element={<Home />} />
-
         </Routes>
       </Container>
       <ToastContainer />

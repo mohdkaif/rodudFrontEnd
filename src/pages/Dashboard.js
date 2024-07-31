@@ -50,13 +50,13 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const token = getToken();
-        const data = await getData('/request-list',token);
-        setRequests(data);
-        setLoading(false);
+        const token = getToken(); 
+        const data = await getData('/request-list', token);
+        setRequests(data); 
       } catch (error) {
-        console.error('Error fetching requests:', error);
-        setLoading(false);
+        console.error('Error fetching requests:', error); 
+      } finally {
+        setLoading(false); 
       }
     };
 
@@ -66,6 +66,16 @@ const Dashboard = () => {
   if (loading) {
     return <p>Loading...</p>;
   }
+  const formatStatus = (status) => {
+    if (!status) return '';
+
+    const formattedStatus = status
+      .replace(/_/g, ' ') 
+      .toLowerCase() 
+      .replace(/^./, str => str.toUpperCase()); 
+
+    return formattedStatus;
+  };
 
   return (
     <StyledContainer>
@@ -83,6 +93,8 @@ const Dashboard = () => {
                   <strong>Weight:</strong> {request.weight} <br />
                   <strong>Pickup Time:</strong> {request.pickup_date_time} <br />
                   <strong>Delivery Time:</strong> {request.delivery_date_time}
+                  <strong>Status:</strong> {formatStatus(request.status)}
+
                 </StyledCardText>
               </Card.Body>
             </StyledCard>

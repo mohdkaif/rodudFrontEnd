@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { postData } from '../apiService';
 import { Alert } from 'react-bootstrap';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import logo from '../logo.svg'; // Ensure the path to your logo is correct
+import logo from '../logo.svg'; 
 
 const Container = styled.div`
   display: flex;
@@ -75,18 +75,16 @@ const Login = ({ setUser }) => {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
- // const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/login', {
-         email,
+      const response = await postData('forgot-password',{}, {
+        email,
         password,
       });
       const { access_token } = response.data;
 
-      // Set user and token in local storage or context
       setUser({ email, token: access_token });
       localStorage.setItem('Authorization', access_token);
       console.log('MESSAGE',response.data)

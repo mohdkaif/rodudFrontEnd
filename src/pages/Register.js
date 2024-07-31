@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { postData } from '../apiService';
-import logo from '../logo.svg'; // Ensure the path to your logo is correct
+import logo from '../logo.svg'; 
 
 const Container = styled.div`
   display: flex;
@@ -96,32 +95,30 @@ const Register = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); // Added loading state
-  const [errors, setErrors] = useState({}); // Added errors state
+  const [loading, setLoading] = useState(false); 
+  const [errors, setErrors] = useState({}); 
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading
+    setLoading(true); 
 
     try {
-      const response = await postData('register',{}, {
+      const response = await postData('register', {
         first_name: firstName,
         last_name: lastName,
         email,
         password,
       });
-      console.log(response.data);
-      navigate('/login'); // Redirect after successful registration
+      navigate('/login'); 
     } catch (error) {
       if (error.response && error.response.data.errors) {
-        setErrors(error.response.data.errors); // Set validation errors
+        setErrors(error.response.data.errors); 
       } else {
         console.error(error);
-        // Optionally handle other types of errors
       }
     } finally {
-      setLoading(false); // Stop loading regardless of success or failure
+      setLoading(false); 
     }
   };
 
