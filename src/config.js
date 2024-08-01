@@ -1,6 +1,6 @@
 // config.js
 const config = {
-    apiEndpoint: 'http://localhost:8000/api/'
+    apiEndpoint: 'https://uat.quipo.com.au/api/'
   };
   
   export default config;
