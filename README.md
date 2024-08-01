@@ -3,7 +3,8 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 - Node Js
 
-- Node 18.8.1 
+- Node 18.8.1
+- Make sure Backend Laravel server should be run if your port or domain is different please update apiService.js file 
 
 ## Available Scripts
 
