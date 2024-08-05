@@ -11,7 +11,7 @@ export const getData = async (endpoint, token) => {
     const response = await api.get(endpoint, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        Authorization: `${token}`
       }
     });
     return response.data;
@@ -32,7 +32,7 @@ export const profileGet = async (endpoint, token) => {
     const response = await api.get(endpoint, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
     });
 
@@ -86,7 +86,7 @@ export const logout = async (endpoint, token) => {
     const response = await api.post(endpoint, null, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        Authorization: `${token}`
       }
     });
     return response.data;

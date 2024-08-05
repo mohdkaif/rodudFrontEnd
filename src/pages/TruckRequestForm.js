@@ -145,15 +145,15 @@ const TruckRequestForm = ({ addRequest }) => {
         try {
             const endpoint = 'add-truck-request';
             const headers = {
-                'Authorization': `${token}`, // Ensure 'Bearer' keyword is included
+                'Authorization': `${token}`, 
                 'Content-Type': 'application/json'
             };
             const response = await postData(endpoint, formattedData, headers);
 
-            // Extract data from the response
-            const { message, data } = response.data;
+            const { message } = response;
+            console.log('RESPONSSSE',message);
 
-            addRequest(data); // Pass the data to addRequest function
+           // addRequest(data); // Pass the data to addRequest function
             setFormData({
                 pickup_address: '',
                 delivery_address: '',
@@ -163,7 +163,7 @@ const TruckRequestForm = ({ addRequest }) => {
                 delivery_date_time: '',
             });
             toast.success(message); // Show success toast with message from response
-            setTimeout(() => navigate('/dashboard'), 5000); 
+            setTimeout(() => navigate('/dashboard'), 2000); 
         } catch (err) {
             if (err.response && err.response.data.errors) {
                 const validationErrors = err.response.data.errors;
