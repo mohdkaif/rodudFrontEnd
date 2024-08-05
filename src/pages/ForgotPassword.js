@@ -1,25 +1,23 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { postData } from '../apiService';
+import { postData } from '../services/apiService';
 import { Alert } from 'react-bootstrap';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import logo from '../logo.svg'; 
+import logo from '../assets/images/logo.svg'; 
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background-color: #f0f2f5;
   font-family: 'Arial, sans-serif';
 `;
 
 const Logo = styled.img`
-  width: 100px;
-  margin-bottom: 20px;
+  width: 150px;
+  margin-bottom: 30px;
 `;
 
 const FormWrapper = styled.div`

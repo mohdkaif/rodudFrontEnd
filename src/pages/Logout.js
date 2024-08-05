@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../apiService'; 
+import { logout } from '../services/apiService'; 
 import { getToken } from '../utils/authUtils';
 
 const Logout = () => {

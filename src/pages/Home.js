@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col, Image } from 'react-bootstrap';
 import { FaTruck, FaShippingFast, FaWarehouse } from 'react-icons/fa';
-import logo from '../logo.svg'; 
+import logo from '../assets/images/logo.svg'; 
 import '../assets/css/home.css'; 
 
 const Home = () => {

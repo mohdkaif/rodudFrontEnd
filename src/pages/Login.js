@@ -1,25 +1,25 @@
+// src/components/Login.js
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { Alert } from 'react-bootstrap';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import logo from '../logo.svg'; 
-import { postData } from '../apiService';
+import logo from '../assets/images/logo.svg';
+import { postData } from '../services/apiService';
+import { useAuth } from '../context/AuthContext'; // Import useAuth from context
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background-color: #f0f2f5;
   font-family: 'Arial, sans-serif';
 `;
 
 const Logo = styled.img`
-  width: 100px;
-  margin-bottom: 20px;
+  width: 150px;
+  margin-bottom: 30px;
 `;
 
 const FormWrapper = styled.div`
@@ -69,26 +69,23 @@ const LinkText = styled.div`
   color: #007bff;
 `;
 
-const Login = ({ setUser }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
+  const { login } = useAuth(); 
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const response = await postData('login', { email, password });
-      
-      console.log('Full Response:', response);
-      
       const { access_token, token_type } = response;
-  
+
       if (access_token && token_type) {
         localStorage.setItem('Authorization', `${token_type} ${access_token}`);
-        
-        setUser({ token: access_token });
+        login({ token: access_token });
         toast.success('Login successful!');
         setTimeout(() => {
           navigate('/dashboard');
@@ -101,8 +98,6 @@ const Login = ({ setUser }) => {
       toast.error('Invalid email or password');
     }
   };
-  
-  
 
   return (
     <Container>

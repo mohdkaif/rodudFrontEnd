@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
-import { profileGet } from '../apiService'; 
+import { profileGet } from '../services/apiService'; 
 import '../assets/css/profile.css'; 
 import { getToken } from '../utils/authUtils';
 

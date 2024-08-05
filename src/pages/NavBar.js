@@ -1,26 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Navbar, Nav } from 'react-bootstrap';
+import { FaHome, FaTruck, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaKey } from 'react-icons/fa';
+import '../assets/css/navbar.css';
 
 const NavBar = ({ user }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const handleLinkClick = () => {
+    if (window.innerWidth < 992) {
+      setExpanded(false);
+    }
+  };
+
   return (
-    <Navbar bg="light" expand="lg">
-      <Navbar.Brand href="/">Rodud App</Navbar.Brand>
+    <Navbar 
+      bg="light" 
+      expand="lg" 
+      expanded={expanded}
+      onToggle={() => setExpanded(!expanded)}
+      className="navbar-custom"
+    >
+      <Navbar.Brand href="/" onClick={handleLinkClick}>Rodud App</Navbar.Brand>
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
           {user ? (
             <>
-              <Nav.Link as={NavLink} to="/dashboard">Dashboard</Nav.Link>
-              <Nav.Link as={NavLink} to="/truckRequestForm">Truck Request</Nav.Link>
-              <Nav.Link as={NavLink} to="/profile">Profile</Nav.Link>
-              <Nav.Link as={NavLink} to="/logout">Logout</Nav.Link>
+              <Nav.Link as={NavLink} to="/dashboard" onClick={handleLinkClick}>
+                <FaHome className="nav-icon" /> Dashboard
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/truckRequestForm" onClick={handleLinkClick}>
+                <FaTruck className="nav-icon" /> Truck Request
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/profile" onClick={handleLinkClick}>
+                <FaUser className="nav-icon" /> Profile
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/logout" onClick={handleLinkClick}>
+                <FaSignOutAlt className="nav-icon" /> Logout
+              </Nav.Link>
             </>
           ) : (
             <>
-              <Nav.Link as={NavLink} to="/login">Login</Nav.Link>
-              <Nav.Link as={NavLink} to="/register">Register</Nav.Link>
-              <Nav.Link as={NavLink} to="/forgot-password">Forgot Password</Nav.Link>
+              <Nav.Link as={NavLink} to="/login" onClick={handleLinkClick}>
+                <FaSignInAlt className="nav-icon" /> Login
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/register" onClick={handleLinkClick}>
+                <FaUserPlus className="nav-icon" /> Register
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/forgot-password" onClick={handleLinkClick}>
+                <FaKey className="nav-icon" /> Forgot Password
+              </Nav.Link>
             </>
           )}
         </Nav>

@@ -3,10 +3,11 @@ import { Form, Button, Container, Row, Col, Spinner } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import PlacesAutocomplete from 'react-places-autocomplete';
+import { FaMapMarkerAlt, FaBox, FaWeight, FaCalendarAlt, FaArrowRight } from 'react-icons/fa';
 import { getToken } from '../utils/authUtils';
-import { postData } from '../apiService';
+import { postData } from '../services/apiService';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; 
+import 'react-toastify/dist/ReactToastify.css';
 
 const LinkText = styled.div`
     text-align: center;
@@ -76,6 +77,22 @@ const Title = styled.h2`
     margin-bottom: 20px;
 `;
 
+const FieldGroup = styled(Form.Group)`
+    margin-bottom: 20px;
+`;
+
+const IconContainer = styled.div`
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+`;
+
+const Icon = styled.div`
+    color: #007bff;
+    font-size: 1.5rem;
+    margin-right: 10px;
+`;
+
 const TruckRequestForm = ({ addRequest }) => {
     const [formData, setFormData] = useState({
         pickup_address: '',
@@ -85,9 +102,11 @@ const TruckRequestForm = ({ addRequest }) => {
         pickup_date_time: '',
         delivery_date_time: '',
     });
+
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const navigate = useNavigate(); 
+    const [errors, setErrors] = useState({}); 
+    
+    const navigate = useNavigate();
 
     const handleChange = (address, name) => {
         setFormData({ ...formData, [name]: address });
@@ -97,8 +116,12 @@ const TruckRequestForm = ({ addRequest }) => {
         setFormData({ ...formData, [name]: address });
     };
 
-    const formatDate = (datetime) => {
-        const [date] = datetime.split('T');
+    const handleDateChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const formatDate = (date) => {
         const [year, month, day] = date.split('-');
         return `${day}/${month}/${year}`;
     };
@@ -106,7 +129,7 @@ const TruckRequestForm = ({ addRequest }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
+        setErrors({}); // Reset errors
 
         const token = getToken();
 
@@ -122,12 +145,15 @@ const TruckRequestForm = ({ addRequest }) => {
         try {
             const endpoint = 'add-truck-request';
             const headers = {
-                'Authorization': `${token}`,
+                'Authorization': `Bearer ${token}`, // Ensure 'Bearer' keyword is included
                 'Content-Type': 'application/json'
             };
-            const response = await postData(endpoint, formattedData,headers);
+            const response = await postData(endpoint, formattedData, headers);
 
-            addRequest(formattedData);
+            // Extract data from the response
+            const { message, data } = response.data;
+
+            addRequest(data); // Pass the data to addRequest function
             setFormData({
                 pickup_address: '',
                 delivery_address: '',
@@ -136,11 +162,17 @@ const TruckRequestForm = ({ addRequest }) => {
                 pickup_date_time: '',
                 delivery_date_time: '',
             });
-            toast.success(response.data.message); // Show success toast
+            toast.success(message); // Show success toast with message from response
             setTimeout(() => navigate('/dashboard'), 2000); // Redirect after 2 seconds
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred');
-            toast.error('An error occurred'); // Show error toast
+            if (err.response && err.response.data.errors) {
+                // Extract validation errors
+                const validationErrors = err.response.data.errors;
+                setErrors(validationErrors); // Update errors state
+            } else {
+                setErrors({ general: 'An error occurred' }); // Handle general errors
+                toast.error('An error occurred'); // Show error toast
+            }
         } finally {
             setLoading(false);
         }
@@ -152,7 +184,7 @@ const TruckRequestForm = ({ addRequest }) => {
                 <Col md={8} lg={6}>
                     <Title className="text-center">Truck Request Form</Title>
                     <CustomForm onSubmit={handleSubmit}>
-                        <Form.Group controlId="pickup_address">
+                        <FieldGroup controlId="pickup_address">
                             <Form.Label>Pickup Location</Form.Label>
                             <AutocompleteContainer>
                                 <PlacesAutocomplete
@@ -162,39 +194,41 @@ const TruckRequestForm = ({ addRequest }) => {
                                 >
                                     {({ getInputProps, suggestions, getSuggestionItemProps }) => (
                                         <div>
-                                            <CustomControl
-                                                {...getInputProps({
-                                                    placeholder: 'Enter pickup address',
-                                                    autoComplete: 'off'
-                                                })}
-                                                required
-                                            />
+                                            <IconContainer>
+                                                <Icon><FaMapMarkerAlt /></Icon>
+                                                <CustomControl
+                                                    {...getInputProps({
+                                                        placeholder: 'Enter pickup address',
+                                                        autoComplete: 'off'
+                                                    })}
+                                                    isInvalid={!!errors.pickup_address}
+                                                    required
+                                                />
+                                            </IconContainer>
+                                            {errors.pickup_address && (
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.pickup_address[0]}
+                                                </Form.Control.Feedback>
+                                            )}
                                             {suggestions.length > 0 && (
                                                 <AutocompleteDropdown>
-                                                    {suggestions.map((suggestion) => {
-                                                        const className = suggestion.active
-                                                            ? 'suggestion-item--active'
-                                                            : '';
-                                                        return (
-                                                            <SuggestionItem
-                                                                {...getSuggestionItemProps(suggestion, {
-                                                                    className,
-                                                                })}
-                                                            >
-                                                                <strong>{suggestion.formattedSuggestion.mainText}</strong>
-                                                                <small>{suggestion.formattedSuggestion.secondaryText}</small>
-                                                            </SuggestionItem>
-                                                        );
-                                                    })}
+                                                    {suggestions.map((suggestion) => (
+                                                        <SuggestionItem
+                                                            {...getSuggestionItemProps(suggestion)}
+                                                        >
+                                                            <strong>{suggestion.formattedSuggestion.mainText}</strong>
+                                                            <small>{suggestion.formattedSuggestion.secondaryText}</small>
+                                                        </SuggestionItem>
+                                                    ))}
                                                 </AutocompleteDropdown>
                                             )}
                                         </div>
                                     )}
                                 </PlacesAutocomplete>
                             </AutocompleteContainer>
-                        </Form.Group>
+                        </FieldGroup>
 
-                        <Form.Group controlId="delivery_address">
+                        <FieldGroup controlId="delivery_address">
                             <Form.Label>Delivery Location</Form.Label>
                             <AutocompleteContainer>
                                 <PlacesAutocomplete
@@ -204,97 +238,137 @@ const TruckRequestForm = ({ addRequest }) => {
                                 >
                                     {({ getInputProps, suggestions, getSuggestionItemProps }) => (
                                         <div>
-                                            <CustomControl
-                                                {...getInputProps({
-                                                    placeholder: 'Enter delivery address',
-                                                    autoComplete: 'off'
-                                                })}
-                                                required
-                                            />
+                                            <IconContainer>
+                                                <Icon><FaMapMarkerAlt /></Icon>
+                                                <CustomControl
+                                                    {...getInputProps({
+                                                        placeholder: 'Enter delivery address',
+                                                        autoComplete: 'off'
+                                                    })}
+                                                    isInvalid={!!errors.delivery_address}
+                                                    required
+                                                />
+                                            </IconContainer>
+                                            {errors.delivery_address && (
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.delivery_address[0]}
+                                                </Form.Control.Feedback>
+                                            )}
                                             {suggestions.length > 0 && (
                                                 <AutocompleteDropdown>
-                                                    {suggestions.map((suggestion) => {
-                                                        const className = suggestion.active
-                                                            ? 'suggestion-item--active'
-                                                            : '';
-                                                        return (
-                                                            <SuggestionItem
-                                                                {...getSuggestionItemProps(suggestion, {
-                                                                    className,
-                                                                })}
-                                                            >
-                                                                <strong>{suggestion.formattedSuggestion.mainText}</strong>
-                                                                <small>{suggestion.formattedSuggestion.secondaryText}</small>
-                                                            </SuggestionItem>
-                                                        );
-                                                    })}
+                                                    {suggestions.map((suggestion) => (
+                                                        <SuggestionItem
+                                                            {...getSuggestionItemProps(suggestion)}
+                                                        >
+                                                            <strong>{suggestion.formattedSuggestion.mainText}</strong>
+                                                            <small>{suggestion.formattedSuggestion.secondaryText}</small>
+                                                        </SuggestionItem>
+                                                    ))}
                                                 </AutocompleteDropdown>
                                             )}
                                         </div>
                                     )}
                                 </PlacesAutocomplete>
                             </AutocompleteContainer>
-                        </Form.Group>
+                        </FieldGroup>
 
-                        <Form.Group controlId="size">
+                        <FieldGroup controlId="size">
                             <Form.Label>Size</Form.Label>
-                            <CustomControl
-                                type="text"
-                                name="size"
-                                value={formData.size}
-                                onChange={(e) => handleChange(e.target.value, 'size')}
-                                required
-                            />
-                        </Form.Group>
+                            <IconContainer>
+                                <Icon><FaBox /></Icon>
+                                <CustomControl
+                                    type="text"
+                                    name="size"
+                                    value={formData.size}
+                                    onChange={(e) => handleChange(e.target.value, 'size')}
+                                    isInvalid={!!errors.size}
+                                    required
+                                />
+                            </IconContainer>
+                            {errors.size && (
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.size[0]}
+                                </Form.Control.Feedback>
+                            )}
+                        </FieldGroup>
 
-                        <Form.Group controlId="weight">
+                        <FieldGroup controlId="weight">
                             <Form.Label>Weight</Form.Label>
-                            <CustomControl
-                                type="text"
-                                name="weight"
-                                value={formData.weight}
-                                onChange={(e) => handleChange(e.target.value, 'weight')}
-                                required
-                            />
-                        </Form.Group>
+                            <IconContainer>
+                                <Icon><FaWeight /></Icon>
+                                <CustomControl
+                                    type="text"
+                                    name="weight"
+                                    value={formData.weight}
+                                    onChange={(e) => handleChange(e.target.value, 'weight')}
+                                    isInvalid={!!errors.weight}
+                                    required
+                                />
+                            </IconContainer>
+                            {errors.weight && (
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.weight[0]}
+                                </Form.Control.Feedback>
+                            )}
+                        </FieldGroup>
 
-                        <Form.Group controlId="pickup_date_time">
-                            <Form.Label>Pickup Date & Time</Form.Label>
-                            <CustomControl
-                                type="date"
-                                name="pickup_date_time"
-                                value={formData.pickup_date_time}
-                                onChange={(e) => handleChange(e.target.value, 'pickup_date_time')}
-                                required
-                            />
-                        </Form.Group>
+                        <FieldGroup controlId="pickup_date_time">
+                            <Form.Label>Pickup Date</Form.Label>
+                            <IconContainer>
+                                <Icon><FaCalendarAlt /></Icon>
+                                <CustomControl
+                                    type="date"
+                                    name="pickup_date_time"
+                                    value={formData.pickup_date_time}
+                                    onChange={handleDateChange}
+                                    isInvalid={!!errors.pickup_date_time}
+                                    required
+                                />
+                            </IconContainer>
+                            {errors.pickup_date_time && (
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.pickup_date_time[0]}
+                                </Form.Control.Feedback>
+                            )}
+                        </FieldGroup>
 
-                        <Form.Group controlId="delivery_date_time">
-                            <Form.Label>Delivery Date & Time</Form.Label>
-                            <CustomControl
-                                type="date"
-                                name="delivery_date_time"
-                                value={formData.delivery_date_time}
-                                onChange={(e) => handleChange(e.target.value, 'delivery_date_time')}
-                                required
-                            />
-                        </Form.Group>
+                        <FieldGroup controlId="delivery_date_time">
+                            <Form.Label>Delivery Date</Form.Label>
+                            <IconContainer>
+                                <Icon><FaCalendarAlt /></Icon>
+                                <CustomControl
+                                    type="date"
+                                    name="delivery_date_time"
+                                    value={formData.delivery_date_time}
+                                    onChange={handleDateChange}
+                                    isInvalid={!!errors.delivery_date_time}
+                                    required
+                                />
+                            </IconContainer>
+                            {errors.delivery_date_time && (
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.delivery_date_time[0]}
+                                </Form.Control.Feedback>
+                            )}
+                        </FieldGroup>
 
                         <CustomButton variant="primary" type="submit" className="w-100 my-3" disabled={loading}>
                             {loading ? (
                                 <Spinner animation="border" size="sm" />
                             ) : (
-                                'Submit Request'
+                                <>
+                                    <FaArrowRight style={{ marginRight: '10px' }} /> Submit Request
+                                </>
                             )}
                         </CustomButton>
-                        {error && <div className="text-danger text-center my-2">{error}</div>}
+                        {errors.general && <div className="text-danger text-center my-2">{errors.general}</div>}
                         <LinkText>
                             <Link to="/dashboard" style={{ color: '#007bff', textDecoration: 'none' }}>
                                 Go To Dashboard
                             </Link>
                         </LinkText>
                     </CustomForm>
-                    <ToastContainer /> 
+                    <ToastContainer />
                 </Col>
             </Row>
         </Container>
