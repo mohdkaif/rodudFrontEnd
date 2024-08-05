@@ -145,7 +145,7 @@ const TruckRequestForm = ({ addRequest }) => {
         try {
             const endpoint = 'add-truck-request';
             const headers = {
-                'Authorization': `Bearer ${token}`, // Ensure 'Bearer' keyword is included
+                'Authorization': `${token}`, // Ensure 'Bearer' keyword is included
                 'Content-Type': 'application/json'
             };
             const response = await postData(endpoint, formattedData, headers);
@@ -163,15 +163,14 @@ const TruckRequestForm = ({ addRequest }) => {
                 delivery_date_time: '',
             });
             toast.success(message); // Show success toast with message from response
-            setTimeout(() => navigate('/dashboard'), 2000); // Redirect after 2 seconds
+            setTimeout(() => navigate('/dashboard'), 5000); 
         } catch (err) {
             if (err.response && err.response.data.errors) {
-                // Extract validation errors
                 const validationErrors = err.response.data.errors;
-                setErrors(validationErrors); // Update errors state
+                setErrors(validationErrors); 
             } else {
-                setErrors({ general: 'An error occurred' }); // Handle general errors
-                toast.error('An error occurred'); // Show error toast
+                setErrors({ general: 'An error occurred' }); 
+                toast.error('An error occurred'); 
             }
         } finally {
             setLoading(false);

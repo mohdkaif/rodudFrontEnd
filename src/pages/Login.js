@@ -1,4 +1,3 @@
-// src/components/Login.js
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
@@ -7,7 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import logo from '../assets/images/logo.svg';
 import { postData } from '../services/apiService';
-import { useAuth } from '../context/AuthContext'; // Import useAuth from context
+import { useAuth } from '../context/AuthContext'; 
 
 const Container = styled.div`
   display: flex;

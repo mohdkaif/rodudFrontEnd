@@ -1,4 +1,3 @@
-/* Footer.css */
 .footer {
     background-color: #f8f9fa;
     padding: 20px;
@@ -8,7 +7,7 @@
     bottom: 0;
     width: 100%;
     left: 0;
-    z-index: 1000; /* Ensure footer is above other content */
+    z-index: 1000; 
   }
   
   .footer .container {

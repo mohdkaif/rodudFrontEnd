@@ -13,7 +13,6 @@ const Logout = () => {
         const data = await logout('/logout',token);
         localStorage.removeItem('Authorization'); 
         
-        // navigate('/login');
         window.location.href='/login'
       } catch (error) {
         console.error('Logout error:', error);
