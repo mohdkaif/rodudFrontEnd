@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Row, Col, Image } from 'react-bootstrap';
 import { FaTruck, FaShippingFast, FaWarehouse } from 'react-icons/fa';
 import logo from '../logo.svg'; 
-import '../assest/css/home.css'; 
+import '../assets/css/home.css'; 
 
 const Home = () => {
   return (

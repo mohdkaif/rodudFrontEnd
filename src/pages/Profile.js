@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
 import { profileGet } from '../apiService'; 
-import '../assest/css/profile.css'; 
+import '../assets/css/profile.css'; 
 import { getToken } from '../utils/authUtils';
 
 const Profile = () => {
