@@ -9,7 +9,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Available Scripts
 
 ```
-git clone https://github.com/mohdkaif/rodudApp.git
+git clone https://github.com/mohdkaif/rodudFrontEnd.git
 ```
 In the project directory, you can run:
 ### `npm start`
